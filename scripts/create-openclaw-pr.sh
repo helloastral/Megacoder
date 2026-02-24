@@ -169,8 +169,8 @@ updated_at: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 pr_url: $PR_URL
 STATUS
 
-if [[ -x "$SCRIPT_DIR/notify-origin.sh" ]]; then
-  "$SCRIPT_DIR/notify-origin.sh" "$PROJECT_DIR" "$RUN_ID" pr || true
+if [[ -x "$SCRIPT_DIR/dispatch-event.sh" ]]; then
+  "$SCRIPT_DIR/dispatch-event.sh" "$PROJECT_DIR" "$RUN_ID" pr
 fi
 
 echo "PR ready: $PR_URL"

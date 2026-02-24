@@ -149,12 +149,12 @@ phase: planned
 updated_at: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 STATUS
 
-if [[ -x "$SCRIPT_DIR/notify-origin.sh" ]]; then
+if [[ -x "$SCRIPT_DIR/dispatch-event.sh" ]]; then
   q_trimmed="$(tr -d '[:space:]' < "$ABS_RUN_DIR/QUESTIONS.md")"
   if [[ "$q_trimmed" == "NONE" ]]; then
-    "$SCRIPT_DIR/notify-origin.sh" "$PROJECT_DIR" "$RUN_ID" planned || true
+    "$SCRIPT_DIR/dispatch-event.sh" "$PROJECT_DIR" "$RUN_ID" planned
   else
-    "$SCRIPT_DIR/notify-origin.sh" "$PROJECT_DIR" "$RUN_ID" questions || true
+    "$SCRIPT_DIR/dispatch-event.sh" "$PROJECT_DIR" "$RUN_ID" questions
   fi
 fi
 

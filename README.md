@@ -5,8 +5,9 @@ MegaCoder is an OpenClaw skill for parallel, thread-safe software delivery:
 1. OpenClaw ingests ticket/chat context and creates a run id
 2. Codex CLI performs architecture + planning
 3. Claude Code CLI implements from the approved plan
-4. OpenClaw sends updates/questions to the originating thread
-5. OpenClaw creates feature/bugfix PRs
+4. OpenClaw sends updates/questions to the originating thread and wakes the main agent
+5. Heartbeat safety-net re-dispatches missed events
+6. OpenClaw creates feature/bugfix PRs
 
 ## Repository Contents
 
@@ -17,6 +18,9 @@ MegaCoder is an OpenClaw skill for parallel, thread-safe software delivery:
 - `scripts/run-codex-plan.sh` - planning pass (Codex)
 - `scripts/run-claude-implement.sh` - implementation pass (Claude)
 - `scripts/notify-origin.sh` - posts updates to originating channel/thread
+- `scripts/wake-main-agent.sh` - re-invokes the OpenClaw main agent on run events
+- `scripts/dispatch-event.sh` - unified notify + wake dispatcher
+- `scripts/heartbeat-check.sh` - heartbeat safety-net to catch missed notifications
 - `scripts/create-openclaw-pr.sh` - pushes branch and opens PR (OpenClaw step)
 
 ## Prerequisites
@@ -57,6 +61,7 @@ export MC_ROUTE_CHANNEL="slack"
 export MC_ROUTE_TARGET="C123456"
 export MC_ROUTE_THREAD_ID="1730412217.008"
 export MC_ROUTE_REPLY_TO="1730412217.008"
+export MC_ORIGIN_AGENT_ID="main-agent"
 export MC_TASK_SOURCE="linear"
 export MC_TASK_ID="ABC-123"
 export MC_TASK_TITLE="Improve checkout retries"
@@ -90,6 +95,12 @@ export MEGACODER_PR_KIND=feature # or bugfix
 bash scripts/create-openclaw-pr.sh /path/to/project <run_id>
 ```
 
+7. Add heartbeat safety-net (OpenClaw HEARTBEAT.md should call this):
+
+```bash
+bash scripts/heartbeat-check.sh /path/to/project
+```
+
 ## Permission Profiles
 
 Safe defaults:
@@ -106,5 +117,8 @@ export MEGACODER_CLAUDE_MODE=dangerous
 ## Notes
 
 - `run-codex-plan.sh` and `run-claude-implement.sh` create context packets so each agent receives full run context.
-- `notify-origin.sh` sends messages back to the original route metadata in `ROUTE.env`.
+- `dispatch-event.sh` now runs after plan/implement/PR and does both:
+- notify origin thread via `notify-origin.sh`
+- wake orchestrator agent via `wake-main-agent.sh`
+- `heartbeat-check.sh` is a fallback scanner for missed wake/message events.
 - OpenClaw remains the orchestrator and PR owner; Codex/Claude are execution engines.

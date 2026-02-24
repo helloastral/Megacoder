@@ -11,6 +11,7 @@ Creates a run-scoped .megacoder/runs/<run_id> state folder and
 Optional environment variables:
   MEGACODER_BASE_BRANCH=origin/main
   MEGACODER_BRANCH_PREFIX=codex
+  MC_ORIGIN_AGENT_ID=<openclaw agent id that should be re-invoked>
   MC_TASK_ID=ABC-123
   MC_TASK_TITLE="Short task title"
   MC_TASK_SOURCE="slack|telegram|jira|linear|..."
@@ -97,6 +98,7 @@ ROUTE_FILE="$RUN_DIR/ROUTE.env"
   printf "MC_ROUTE_THREAD_ID='%s'\n" "$(quote_for_env "${MC_ROUTE_THREAD_ID:-}")"
   printf "MC_ROUTE_REPLY_TO='%s'\n" "$(quote_for_env "${MC_ROUTE_REPLY_TO:-}")"
   printf "MC_ROUTE_ACCOUNT='%s'\n" "$(quote_for_env "${MC_ROUTE_ACCOUNT:-}")"
+  printf "MC_ORIGIN_AGENT_ID='%s'\n" "$(quote_for_env "${MC_ORIGIN_AGENT_ID:-}")"
   printf "MC_TASK_ID='%s'\n" "$(quote_for_env "${MC_TASK_ID:-}")"
   printf "MC_TASK_TITLE='%s'\n" "$(quote_for_env "${MC_TASK_TITLE:-}")"
   printf "MC_TASK_SOURCE='%s'\n" "$(quote_for_env "${MC_TASK_SOURCE:-unknown}")"
@@ -134,6 +136,7 @@ if [[ ! -f "$RUN_DIR/INTAKE.md" ]]; then
     echo "- thread_id: ${MC_ROUTE_THREAD_ID:-}"
     echo "- reply_to: ${MC_ROUTE_REPLY_TO:-}"
     echo "- account: ${MC_ROUTE_ACCOUNT:-}"
+    echo "- origin_agent_id: ${MC_ORIGIN_AGENT_ID:-}"
   } > "$RUN_DIR/INTAKE.md"
 fi
 

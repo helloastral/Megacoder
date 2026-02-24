@@ -170,11 +170,11 @@ phase: $phase
 updated_at: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 STATUS
 
-if [[ -x "$SCRIPT_DIR/notify-origin.sh" ]]; then
+if [[ -x "$SCRIPT_DIR/dispatch-event.sh" ]]; then
   if [[ "$q_trimmed" == "NONE" ]]; then
-    "$SCRIPT_DIR/notify-origin.sh" "$PROJECT_DIR" "$RUN_ID" implemented || true
+    "$SCRIPT_DIR/dispatch-event.sh" "$PROJECT_DIR" "$RUN_ID" implemented
   else
-    "$SCRIPT_DIR/notify-origin.sh" "$PROJECT_DIR" "$RUN_ID" questions || true
+    "$SCRIPT_DIR/dispatch-event.sh" "$PROJECT_DIR" "$RUN_ID" questions
   fi
 fi
 

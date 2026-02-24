@@ -24,7 +24,7 @@ Required state artifacts:
 - `QUESTIONS.md` - unresolved blockers (`NONE` when clear)
 - `IMPLEMENTATION_SUMMARY.md` - Claude implementation summary
 - `TEST_RESULTS.md` - command-by-command validation results
-- `ROUTE.env` - origin routing metadata (channel/target/thread/reply)
+- `ROUTE.env` - origin routing metadata (channel/target/thread/reply/origin agent)
 
 ## Phase 1 - Bootstrap (OpenClaw)
 
@@ -41,7 +41,8 @@ Required state artifacts:
    - `PLAN.md`
    - `TASKS.md`
    - `QUESTIONS.md`
-3. If `QUESTIONS.md != NONE`, OpenClaw sends questions back to the originating thread and pauses.
+3. Script dispatches event via `scripts/dispatch-event.sh`.
+4. If `QUESTIONS.md != NONE`, OpenClaw sends questions back to the originating thread and pauses.
 
 ## Phase 3 - Clarify (Human + OpenClaw)
 
@@ -57,17 +58,20 @@ Required state artifacts:
    - `QUESTIONS.md`
    - `IMPLEMENTATION_SUMMARY.md`
    - `TEST_RESULTS.md`
-4. If blockers appear, OpenClaw sends them to origin thread and returns to Phase 3.
+4. Script dispatches event via `scripts/dispatch-event.sh`.
+5. If blockers appear, OpenClaw sends them to origin thread and returns to Phase 3.
 
 ## Phase 5 - PR (OpenClaw)
 
 1. Call `scripts/create-openclaw-pr.sh`.
 2. OpenClaw pushes the run branch and opens/updates PR.
-3. OpenClaw posts PR URL back to the originating thread.
+3. Script dispatches event via `scripts/dispatch-event.sh`.
+4. OpenClaw posts PR URL back to the originating thread.
 
 ## Routing and Parallelism
 
 - Always store route metadata in `ROUTE.env`.
+- Always set `MC_ORIGIN_AGENT_ID` so completion/questions can wake the correct orchestrator agent.
 - Always reply to that same route metadata.
 - Never share state files between runs.
 - Each run has its own branch + worktree.
@@ -81,4 +85,8 @@ OpenClaw should monitor run status by watching:
 - `IMPLEMENTATION_SUMMARY.md`
 - `PR_URL.txt`
 
-On each phase transition, run `scripts/notify-origin.sh` with the relevant event (`planned`, `questions`, `implemented`, `pr`).
+On each phase transition, run `scripts/dispatch-event.sh` with the relevant event (`planned`, `questions`, `implemented`, `pr`).
+
+Heartbeat fallback:
+- OpenClaw heartbeat should call `scripts/heartbeat-check.sh`.
+- This scanner re-dispatches missed `questions`, `implemented`, and `pr` events only when file content changed.
