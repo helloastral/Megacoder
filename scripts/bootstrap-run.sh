@@ -22,6 +22,7 @@ Optional environment variables:
   MC_ROUTE_THREAD_ID=<thread/topic id>
   MC_ROUTE_REPLY_TO=<message id>
   MC_ROUTE_ACCOUNT=<account id>
+  MEGACODER_BOOTSTRAP_DISPATCH=1|0 (default: 1; send initialized event to wake orchestrator)
 USAGE
 }
 
@@ -43,6 +44,7 @@ PROJECT_DIR="${1:-$(pwd)}"
 RUN_ID="${2:-}"
 BASE_BRANCH="${MEGACODER_BASE_BRANCH:-origin/main}"
 BRANCH_PREFIX="${MEGACODER_BRANCH_PREFIX:-codex}"
+BOOTSTRAP_DISPATCH="${MEGACODER_BOOTSTRAP_DISPATCH:-1}"
 
 if [[ "${PROJECT_DIR}" == "-h" || "${PROJECT_DIR}" == "--help" ]]; then
   usage
@@ -184,3 +186,16 @@ echo "run_id=$RUN_ID"
 echo "run_dir=$RUN_DIR"
 echo "worktree=$WT_DIR"
 echo "branch=$BRANCH_NAME"
+
+if [[ "$BOOTSTRAP_DISPATCH" == "1" ]]; then
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  if [[ -x "$SCRIPT_DIR/dispatch-event.sh" ]]; then
+    if "$SCRIPT_DIR/dispatch-event.sh" "$PROJECT_DIR" "$RUN_ID" initialized; then
+      echo "dispatched=initialized"
+    else
+      echo "dispatch initialized failed (non-fatal)"
+    fi
+  else
+    echo "dispatch-event.sh not executable; skipping bootstrap dispatch"
+  fi
+fi

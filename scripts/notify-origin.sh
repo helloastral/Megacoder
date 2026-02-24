@@ -6,7 +6,7 @@ usage() {
 Usage: notify-origin.sh [project_dir] [run_id] [event]
 
 Sends a run update back to the originating OpenClaw route.
-Event options: planned | questions | implemented | pr
+Event options: initialized | planned | questions | implemented | pr
 USAGE
 }
 
@@ -78,6 +78,9 @@ fi
 
 MSG=""
 case "$EVENT" in
+  initialized)
+    MSG="MegaCoder run $RUN_ID bootstrapped. Starting planning next (run-codex-plan)."
+    ;;
   planned)
     MSG="MegaCoder run $RUN_ID: planning complete. Review PLAN.md and TASKS.md."
     ;;

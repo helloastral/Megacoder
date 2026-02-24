@@ -9,7 +9,7 @@ Dispatch a MegaCoder event by:
 1) notifying the origin channel/thread (if route metadata exists)
 2) waking the orchestrating OpenClaw agent
 
-Event options: planned | questions | implemented | pr
+Event options: initialized | planned | questions | implemented | pr
 USAGE
 }
 

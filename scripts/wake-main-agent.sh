@@ -6,7 +6,7 @@ usage() {
 Usage: wake-main-agent.sh [project_dir] [run_id] [event]
 
 Wake the orchestrating OpenClaw agent after a run event.
-Event options: planned | questions | implemented | pr
+Event options: initialized | planned | questions | implemented | pr
 
 Wake order:
 1) targeted wake via openclaw agent --agent <MC_ORIGIN_AGENT_ID>
@@ -69,6 +69,9 @@ fi
 
 MSG=""
 case "$EVENT" in
+  initialized)
+    MSG="MegaCoder run $RUN_ID bootstrapped. Start Codex planning now by running run-codex-plan.sh."
+    ;;
   planned)
     MSG="MegaCoder run $RUN_ID planned. Review plan and decide whether to proceed to implementation."
     ;;

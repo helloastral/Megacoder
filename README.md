@@ -74,6 +74,8 @@ export MC_TASK_TEXT_FILE="/tmp/inbound-context.txt"
 bash scripts/bootstrap-run.sh /path/to/project
 ```
 
+Bootstrap now dispatches an `initialized` event by default (`MEGACODER_BOOTSTRAP_DISPATCH=1`), which wakes the orchestrator to start planning. Set `MEGACODER_BOOTSTRAP_DISPATCH=0` to disable.
+
 3. Run Codex planning:
 
 ```bash
