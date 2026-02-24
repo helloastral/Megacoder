@@ -23,6 +23,7 @@ Optional environment variables:
   MC_ROUTE_REPLY_TO=<message id>
   MC_ROUTE_ACCOUNT=<account id>
   MEGACODER_BOOTSTRAP_DISPATCH=1|0 (default: 1; send initialized event to wake orchestrator)
+  MEGACODER_REQUIRE_ROUTE=1|0 (default: 1; fail fast if MC_ROUTE_CHANNEL/MC_ROUTE_TARGET missing)
 USAGE
 }
 
@@ -45,6 +46,7 @@ RUN_ID="${2:-}"
 BASE_BRANCH="${MEGACODER_BASE_BRANCH:-origin/main}"
 BRANCH_PREFIX="${MEGACODER_BRANCH_PREFIX:-codex}"
 BOOTSTRAP_DISPATCH="${MEGACODER_BOOTSTRAP_DISPATCH:-1}"
+REQUIRE_ROUTE="${MEGACODER_REQUIRE_ROUTE:-1}"
 
 if [[ "${PROJECT_DIR}" == "-h" || "${PROJECT_DIR}" == "--help" ]]; then
   usage
@@ -61,6 +63,19 @@ fi
 if [[ -z "$RUN_ID" ]]; then
   seed="${MC_TASK_ID:-${MC_TASK_TITLE:-task}}"
   RUN_ID="$(slugify "$seed")-$(date -u +%Y%m%d%H%M%S)"
+fi
+
+if [[ "$REQUIRE_ROUTE" == "1" ]]; then
+  if [[ -z "${MC_ROUTE_CHANNEL:-}" || -z "${MC_ROUTE_TARGET:-}" ]]; then
+    cat <<'ERRMSG'
+Missing required route metadata.
+Set MC_ROUTE_CHANNEL and MC_ROUTE_TARGET before bootstrap,
+or override with MEGACODER_REQUIRE_ROUTE=0 for local/manual runs.
+ERRMSG
+    exit 1
+  fi
+elif [[ -z "${MC_ROUTE_CHANNEL:-}" || -z "${MC_ROUTE_TARGET:-}" ]]; then
+  echo "Warning: route metadata missing (local/manual mode). Notifications may be skipped." >&2
 fi
 
 RUN_ROOT=".megacoder"

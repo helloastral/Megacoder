@@ -76,6 +76,8 @@ bash scripts/bootstrap-run.sh /path/to/project
 
 Bootstrap now dispatches an `initialized` event by default (`MEGACODER_BOOTSTRAP_DISPATCH=1`), which wakes the orchestrator to start planning. Set `MEGACODER_BOOTSTRAP_DISPATCH=0` to disable.
 
+Bootstrap now also requires route metadata by default (`MEGACODER_REQUIRE_ROUTE=1`), so it fails fast if `MC_ROUTE_CHANNEL` / `MC_ROUTE_TARGET` are missing. Use `MEGACODER_REQUIRE_ROUTE=0` only for local/manual runs.
+
 3. Run Codex planning:
 
 ```bash
