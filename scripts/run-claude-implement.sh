@@ -12,6 +12,7 @@ Optional environment variables:
   MEGACODER_CLAUDE_MODE=dangerous|safe (default: dangerous)
   MEGACODER_CLAUDE_PERMISSION_MODE=bypassPermissions|acceptEdits|plan|default (used only in safe mode; default: bypassPermissions)
   MEGACODER_CLAUDE_MODEL=<model>
+  MEGACODER_RUN_AS_USER=<username> (required when running as root; drops privileges via runuser)
 USAGE
 }
 
@@ -129,7 +130,7 @@ fi
 
 case "$CLAUDE_MODE" in
   dangerous)
-    CMD+=(--permission-mode bypassPermissions --dangerously-skip-permissions)
+    CMD+=(--permission-mode bypassPermissions)
     ;;
   safe)
     CMD+=(--permission-mode "$PERMISSION_MODE")
@@ -140,10 +141,26 @@ case "$CLAUDE_MODE" in
     ;;
 esac
 
-(
-  cd "$ABS_WT_DIR"
-  "${CMD[@]}" "$PROMPT"
-) > "$ABS_RUN_DIR/CLAUDE_OUTPUT.json"
+RUN_USER="${MEGACODER_RUN_AS_USER:-openclaw}"
+
+if [[ "$(id -u)" -eq 0 ]]; then
+  # Claude refuses --permission-mode bypassPermissions under root.
+  # Ensure the drop-privilege user exists, create if missing.
+  if ! id "$RUN_USER" &>/dev/null; then
+    echo "User '$RUN_USER' does not exist. Creating..."
+    useradd -r -m -s /bin/bash "$RUN_USER"
+  fi
+  chown -R "$RUN_USER" "$ABS_RUN_DIR" "$ABS_WT_DIR"
+  (
+    cd "$ABS_WT_DIR"
+    runuser -u "$RUN_USER" -- "${CMD[@]}" "$PROMPT"
+  ) > "$ABS_RUN_DIR/CLAUDE_OUTPUT.json"
+else
+  (
+    cd "$ABS_WT_DIR"
+    "${CMD[@]}" "$PROMPT"
+  ) > "$ABS_RUN_DIR/CLAUDE_OUTPUT.json"
+fi
 
 if [[ ! -f "$ABS_RUN_DIR/QUESTIONS.md" ]]; then
   echo "Claude did not produce QUESTIONS.md"
