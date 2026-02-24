@@ -2,12 +2,14 @@
 
 ## Artifact contract
 
-Create and maintain these files per project:
-- `ROUGH_DRAFT.md`: raw user intent
-- `PLAN.md`: architecture + phased approach
-- `QUESTIONS.md`: unresolved questions/blockers
-- `DECISIONS.md`: user-approved decisions
-- `TASKS.md`: executable checklist for implementation
+Create and maintain these files per project under `.megacoder/`:
+- `.megacoder/ROUGH_DRAFT.md`: raw user intent
+- `.megacoder/PLAN.md`: architecture + phased approach
+- `.megacoder/QUESTIONS.md`: unresolved questions/blockers
+- `.megacoder/DECISIONS.md`: user-approved decisions
+- `.megacoder/TASKS.md`: executable checklist for implementation
+
+Add `.megacoder/` to the project `.gitignore`.
 
 ## Phase A — Plan (Codex CLI)
 

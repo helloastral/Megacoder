@@ -55,7 +55,14 @@ This produces:
 
 ## Usage
 
-In your project folder, create these files:
+In your project folder, create a hidden state directory and ignore it:
+
+```bash
+mkdir -p .megacoder
+echo ".megacoder/" >> .gitignore
+```
+
+Inside `.megacoder/`, use:
 
 - `ROUGH_DRAFT.md`
 - `PLAN.md`
@@ -69,7 +76,7 @@ Run planning:
 bash /root/.openclaw/workspace/skills/mega-coder/scripts/run-codex-plan.sh /path/to/project
 ```
 
-Answer questions in `DECISIONS.md` until `QUESTIONS.md` becomes `NONE`.
+Answer questions in `.megacoder/DECISIONS.md` until `.megacoder/QUESTIONS.md` becomes `NONE`.
 
 Then run implementation:
 

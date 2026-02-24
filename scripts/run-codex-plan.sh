@@ -4,28 +4,35 @@ set -euo pipefail
 PROJECT_DIR="${1:-$(pwd)}"
 cd "$PROJECT_DIR"
 
-for f in ROUGH_DRAFT.md; do
+STATE_DIR=".megacoder"
+mkdir -p "$STATE_DIR"
+
+for f in "$STATE_DIR/ROUGH_DRAFT.md"; do
   [[ -f "$f" ]] || { echo "Missing required file: $f"; exit 1; }
 done
 
-[[ -f DECISIONS.md ]] || touch DECISIONS.md
+[[ -f "$STATE_DIR/DECISIONS.md" ]] || touch "$STATE_DIR/DECISIONS.md"
 
 PROMPT=$(cat <<'EOF'
 You are the planning architect for this project.
 
-Read ROUGH_DRAFT.md and DECISIONS.md.
+All project-state files are in .megacoder/.
+Read:
+- .megacoder/ROUGH_DRAFT.md
+- .megacoder/DECISIONS.md
+
 Then write/overwrite:
-1) PLAN.md - architecture, milestones, assumptions, risks
-2) TASKS.md - ordered implementation checklist
-3) QUESTIONS.md - only unresolved blockers requiring human input
+1) .megacoder/PLAN.md - architecture, milestones, assumptions, risks
+2) .megacoder/TASKS.md - ordered implementation checklist
+3) .megacoder/QUESTIONS.md - only unresolved blockers requiring human input
 
 Rules:
 - Do NOT implement code.
 - Keep questions concise and high impact.
-- If there are no blockers, set QUESTIONS.md to exactly: NONE
+- If there are no blockers, set .megacoder/QUESTIONS.md to exactly: NONE
 EOF
 )
 
 codex exec --full-auto --sandbox workspace-write "$PROMPT"
 
-echo "Codex planning run complete. Review PLAN.md, TASKS.md, QUESTIONS.md"
+echo "Codex planning run complete. Review .megacoder/PLAN.md, .megacoder/TASKS.md, .megacoder/QUESTIONS.md"

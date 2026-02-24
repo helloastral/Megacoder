@@ -12,16 +12,17 @@ Use this skill to run a strict planning-then-implementation software workflow:
 
 ## Workflow
 
-1. Create project artifacts in the target project directory:
-   - `ROUGH_DRAFT.md`
-   - `PLAN.md`
-   - `QUESTIONS.md`
-   - `DECISIONS.md`
-   - `TASKS.md`
+1. Create project artifacts in `.megacoder/` inside the target project directory:
+   - `.megacoder/ROUGH_DRAFT.md`
+   - `.megacoder/PLAN.md`
+   - `.megacoder/QUESTIONS.md`
+   - `.megacoder/DECISIONS.md`
+   - `.megacoder/TASKS.md`
+   - Add `.megacoder/` to `.gitignore` in app repos.
 2. Run Codex planning via `scripts/run-codex-plan.sh`.
-3. Read `QUESTIONS.md` and relay questions to the user.
-4. Append user answers to `DECISIONS.md`.
-5. Re-run Codex planning until `QUESTIONS.md` is empty and `TASKS.md` is implementation-ready.
+3. Read `.megacoder/QUESTIONS.md` and relay questions to the user.
+4. Append user answers to `.megacoder/DECISIONS.md`.
+5. Re-run Codex planning until `.megacoder/QUESTIONS.md` is `NONE` and `.megacoder/TASKS.md` is implementation-ready.
 6. Run Claude implementation via `scripts/run-claude-implement.sh`.
 7. Validate with tests/lint/build as appropriate.
 8. Summarize changes, risks, and next actions.
