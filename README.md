@@ -1,99 +1,110 @@
 # MegaCoder Skill
 
-MegaCoder is an OpenClaw skill for a two-stage coding workflow:
+MegaCoder is an OpenClaw skill for parallel, thread-safe software delivery:
 
-1. **Codex CLI plans first** (architecture, tasks, open questions)
-2. **Claude Code CLI implements** after human approval
+1. OpenClaw ingests ticket/chat context and creates a run id
+2. Codex CLI performs architecture + planning
+3. Claude Code CLI implements from the approved plan
+4. OpenClaw sends updates/questions to the originating thread
+5. OpenClaw creates feature/bugfix PRs
 
-This keeps planning and execution separated, with explicit decision tracking.
+## Repository Contents
 
-## Repository contents
-
-- `SKILL.md` — skill definition and orchestration instructions
-- `references/workflow.md` — detailed process and guardrails
-- `references/prompt-templates.md` — reusable prompts for Codex/Claude
-- `scripts/run-codex-plan.sh` — planner runner
-- `scripts/run-claude-implement.sh` — implementation runner
+- `SKILL.md` - skill definition and orchestration behavior
+- `references/workflow.md` - detailed run lifecycle and guardrails
+- `references/prompt-templates.md` - Codex/Claude prompt contracts
+- `scripts/bootstrap-run.sh` - creates run folder + isolated worktree
+- `scripts/run-codex-plan.sh` - planning pass (Codex)
+- `scripts/run-claude-implement.sh` - implementation pass (Claude)
+- `scripts/notify-origin.sh` - posts updates to originating channel/thread
+- `scripts/create-openclaw-pr.sh` - pushes branch and opens PR (OpenClaw step)
 
 ## Prerequisites
 
-On the machine running OpenClaw:
+On the runner machine:
 
-- `codex` CLI installed and authenticated
-- `claude` CLI installed and authenticated
-- Bash shell available
+- `git`
+- `codex` CLI (authenticated)
+- `claude` CLI (authenticated)
+- `openclaw` CLI (for outbound thread updates)
+- `gh` CLI (for PR creation)
 
 Quick checks:
 
 ```bash
+which git
 which codex
 which claude
+which openclaw
+which gh
 ```
 
-## Install in OpenClaw
+## Run Layout
 
-### Option A: Clone into workspace skills directory
+Each run gets isolated state and code:
+
+- State: `.megacoder/runs/<run_id>/...`
+- Code worktree: `.megacoder/worktrees/<run_id>/...`
+
+This enables multiple tickets in parallel with no shared-file collisions.
+
+## Typical OpenClaw-Orchestrated Flow
+
+1. Prepare route + task context (from Slack/Telegram/etc):
 
 ```bash
-cd /root/.openclaw/workspace/skills
-git clone https://github.com/helloastral/Megacoder.git mega-coder
+export MC_ROUTE_CHANNEL="slack"
+export MC_ROUTE_TARGET="C123456"
+export MC_ROUTE_THREAD_ID="1730412217.008"
+export MC_ROUTE_REPLY_TO="1730412217.008"
+export MC_TASK_SOURCE="linear"
+export MC_TASK_ID="ABC-123"
+export MC_TASK_TITLE="Improve checkout retries"
+export MC_TASK_TEXT_FILE="/tmp/inbound-context.txt"
 ```
 
-### Option B: Use packaged file
-
-A packaged skill file can be generated as:
+2. Bootstrap run + worktree:
 
 ```bash
-python3 /usr/lib/node_modules/openclaw/skills/skill-creator/scripts/package_skill.py \
-  /root/.openclaw/workspace/skills/mega-coder \
-  /root/.openclaw/workspace/skills/dist
+bash scripts/bootstrap-run.sh /path/to/project
 ```
 
-This produces:
-
-- `/root/.openclaw/workspace/skills/dist/mega-coder.skill`
-
-## Usage
-
-In your project folder, create a hidden state directory and ignore it:
+3. Run Codex planning:
 
 ```bash
-mkdir -p .megacoder
-echo ".megacoder/" >> .gitignore
+bash scripts/run-codex-plan.sh /path/to/project <run_id>
 ```
 
-Inside `.megacoder/`, use:
+4. If blockers exist, OpenClaw relays `QUESTIONS.md` in the same origin thread and appends answers to `DECISIONS.md`, then reruns step 3.
 
-- `ROUGH_DRAFT.md`
-- `PLAN.md`
-- `QUESTIONS.md`
-- `DECISIONS.md`
-- `TASKS.md`
-
-Run planning:
+5. Run Claude implementation:
 
 ```bash
-bash /root/.openclaw/workspace/skills/mega-coder/scripts/run-codex-plan.sh /path/to/project
+bash scripts/run-claude-implement.sh /path/to/project <run_id>
 ```
 
-Answer questions in `.megacoder/DECISIONS.md` until `.megacoder/QUESTIONS.md` becomes `NONE`.
-
-Then run implementation:
+6. Open PR via OpenClaw-owned step:
 
 ```bash
-bash /root/.openclaw/workspace/skills/mega-coder/scripts/run-claude-implement.sh /path/to/project
+export MEGACODER_PR_KIND=feature # or bugfix
+bash scripts/create-openclaw-pr.sh /path/to/project <run_id>
 ```
 
-## Recommended workflow in chat
+## Permission Profiles
 
-Ask OpenClaw with phrasing like:
+Safe defaults:
+- Codex: `--ask-for-approval never --sandbox workspace-write`
+- Claude: `--permission-mode acceptEdits`
 
-- "Use MegaCoder for this project"
-- "Run MegaCoder planning first"
-- "Continue MegaCoder and start implementation"
+High autonomy (isolated environment only):
+
+```bash
+export MEGACODER_CODEX_MODE=yolo
+export MEGACODER_CLAUDE_MODE=dangerous
+```
 
 ## Notes
 
-- Implementation is blocked if `QUESTIONS.md` is not `NONE`
-- Keep decisions explicit in `DECISIONS.md`
-- Re-run planning whenever scope changes
+- `run-codex-plan.sh` and `run-claude-implement.sh` create context packets so each agent receives full run context.
+- `notify-origin.sh` sends messages back to the original route metadata in `ROUTE.env`.
+- OpenClaw remains the orchestrator and PR owner; Codex/Claude are execution engines.
