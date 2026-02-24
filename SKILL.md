@@ -72,15 +72,13 @@ bash /path/to/mega-coder/scripts/heartbeat-check.sh /path/to/project
 
 ## Permission Modes
 
-Default safe modes:
-- Codex: `--ask-for-approval never --sandbox workspace-write`
-- Claude: `--permission-mode acceptEdits`
+Default non-interactive modes:
+- Codex: `MEGACODER_CODEX_MODE=yolo` (plus `--ask-for-approval never`)
+- Claude: `MEGACODER_CLAUDE_MODE=dangerous` (uses `--permission-mode bypassPermissions --dangerously-skip-permissions`)
 
-Optional high-autonomy modes:
-- Codex: set `MEGACODER_CODEX_MODE=yolo`
-- Claude: set `MEGACODER_CLAUDE_MODE=dangerous` (uses `--permission-mode bypassPermissions --dangerously-skip-permissions`)
-
-Use high-autonomy modes only in isolated runner environments.
+Optional safer override:
+- Codex: set `MEGACODER_CODEX_MODE=safe`
+- Claude: set `MEGACODER_CLAUDE_MODE=safe` and optionally `MEGACODER_CLAUDE_PERMISSION_MODE=acceptEdits|plan|default`
 
 ## References
 

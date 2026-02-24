@@ -9,16 +9,16 @@ Run Claude implementation for a MegaCoder run.
 If run_id is omitted, .megacoder/latest-run is used.
 
 Optional environment variables:
-  MEGACODER_CLAUDE_MODE=safe|dangerous (default: safe)
-  MEGACODER_CLAUDE_PERMISSION_MODE=acceptEdits|plan|bypassPermissions (default: acceptEdits)
+  MEGACODER_CLAUDE_MODE=dangerous|safe (default: dangerous)
+  MEGACODER_CLAUDE_PERMISSION_MODE=bypassPermissions|acceptEdits|plan|default (used only in safe mode; default: bypassPermissions)
   MEGACODER_CLAUDE_MODEL=<model>
 USAGE
 }
 
 PROJECT_DIR="${1:-$(pwd)}"
 RUN_ID="${2:-}"
-CLAUDE_MODE="${MEGACODER_CLAUDE_MODE:-safe}"
-PERMISSION_MODE="${MEGACODER_CLAUDE_PERMISSION_MODE:-acceptEdits}"
+CLAUDE_MODE="${MEGACODER_CLAUDE_MODE:-dangerous}"
+PERMISSION_MODE="${MEGACODER_CLAUDE_PERMISSION_MODE:-bypassPermissions}"
 
 if [[ "$PROJECT_DIR" == "-h" || "$PROJECT_DIR" == "--help" ]]; then
   usage
@@ -128,14 +128,14 @@ if [[ -n "${MEGACODER_CLAUDE_MODEL:-}" ]]; then
 fi
 
 case "$CLAUDE_MODE" in
-  safe)
-    CMD+=(--permission-mode "$PERMISSION_MODE")
-    ;;
   dangerous)
     CMD+=(--permission-mode bypassPermissions --dangerously-skip-permissions)
     ;;
+  safe)
+    CMD+=(--permission-mode "$PERMISSION_MODE")
+    ;;
   *)
-    echo "Invalid MEGACODER_CLAUDE_MODE: $CLAUDE_MODE (expected safe|dangerous)"
+    echo "Invalid MEGACODER_CLAUDE_MODE: $CLAUDE_MODE (expected dangerous|safe)"
     exit 1
     ;;
 esac

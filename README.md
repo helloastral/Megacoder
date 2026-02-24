@@ -103,16 +103,16 @@ bash scripts/heartbeat-check.sh /path/to/project
 
 ## Permission Profiles
 
-Safe defaults:
-- Codex: `--ask-for-approval never --sandbox workspace-write`
-- Claude: `--permission-mode acceptEdits`
-
-High autonomy (isolated environment only):
+Non-interactive defaults:
 
 ```bash
 export MEGACODER_CODEX_MODE=yolo
 export MEGACODER_CLAUDE_MODE=dangerous
 ```
+
+Safer override (may reintroduce permission constraints):
+- Codex: `MEGACODER_CODEX_MODE=safe`
+- Claude: `MEGACODER_CLAUDE_MODE=safe` (optional `MEGACODER_CLAUDE_PERMISSION_MODE=acceptEdits|plan|default`)
 
 ## Notes
 

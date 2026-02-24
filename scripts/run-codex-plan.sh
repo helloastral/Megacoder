@@ -9,7 +9,7 @@ Run Codex planning for a MegaCoder run.
 If run_id is omitted, .megacoder/latest-run is used.
 
 Optional environment variables:
-  MEGACODER_CODEX_MODE=safe|yolo (default: safe)
+  MEGACODER_CODEX_MODE=yolo|safe (default: yolo)
   MEGACODER_CODEX_MODEL=<model>
   MEGACODER_CODEX_SEARCH=1
 USAGE
@@ -17,7 +17,7 @@ USAGE
 
 PROJECT_DIR="${1:-$(pwd)}"
 RUN_ID="${2:-}"
-CODEX_MODE="${MEGACODER_CODEX_MODE:-safe}"
+CODEX_MODE="${MEGACODER_CODEX_MODE:-yolo}"
 
 if [[ "$PROJECT_DIR" == "-h" || "$PROJECT_DIR" == "--help" ]]; then
   usage
@@ -114,7 +114,7 @@ if ! command -v codex >/dev/null 2>&1; then
   exit 1
 fi
 
-CMD=(codex exec --cd "$ABS_WT_DIR" --add-dir "$ABS_RUN_DIR" --output-last-message "$ABS_RUN_DIR/CODEX_LAST_MESSAGE.md" --json)
+CMD=(codex exec --cd "$ABS_WT_DIR" --add-dir "$ABS_RUN_DIR" --output-last-message "$ABS_RUN_DIR/CODEX_LAST_MESSAGE.md" --json --ask-for-approval never)
 if [[ -n "${MEGACODER_CODEX_MODEL:-}" ]]; then
   CMD+=(--model "$MEGACODER_CODEX_MODEL")
 fi
@@ -123,14 +123,14 @@ if [[ "${MEGACODER_CODEX_SEARCH:-0}" == "1" ]]; then
 fi
 
 case "$CODEX_MODE" in
-  safe)
-    CMD+=(--ask-for-approval never --sandbox workspace-write)
-    ;;
   yolo)
     CMD+=(--yolo)
     ;;
+  safe)
+    CMD+=(--sandbox workspace-write)
+    ;;
   *)
-    echo "Invalid MEGACODER_CODEX_MODE: $CODEX_MODE (expected safe|yolo)"
+    echo "Invalid MEGACODER_CODEX_MODE: $CODEX_MODE (expected yolo|safe)"
     exit 1
     ;;
 esac
