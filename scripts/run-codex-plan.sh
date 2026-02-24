@@ -114,7 +114,7 @@ if ! command -v codex >/dev/null 2>&1; then
   exit 1
 fi
 
-CMD=(codex exec --cd "$ABS_WT_DIR" --add-dir "$ABS_RUN_DIR" --output-last-message "$ABS_RUN_DIR/CODEX_LAST_MESSAGE.md" --json --ask-for-approval never)
+CMD=(codex exec --cd "$ABS_WT_DIR" --add-dir "$ABS_RUN_DIR" --output-last-message "$ABS_RUN_DIR/CODEX_LAST_MESSAGE.md" --json)
 if [[ -n "${MEGACODER_CODEX_MODEL:-}" ]]; then
   CMD+=(--model "$MEGACODER_CODEX_MODEL")
 fi
@@ -124,7 +124,7 @@ fi
 
 case "$CODEX_MODE" in
   yolo)
-    CMD+=(--yolo)
+    CMD+=(--dangerously-bypass-approvals-and-sandbox)
     ;;
   safe)
     CMD+=(--sandbox workspace-write)
