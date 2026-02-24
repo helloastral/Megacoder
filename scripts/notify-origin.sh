@@ -19,6 +19,17 @@ trim_file() {
   LC_ALL=C head -c "$max_chars" "$file"
 }
 
+supports_codeblock_channel() {
+  case "${MC_ROUTE_CHANNEL:-}" in
+    slack|telegram|whatsapp)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 PROJECT_DIR="${1:-$(pwd)}"
 RUN_ID="${2:-}"
 EVENT="${3:-}"
@@ -82,7 +93,35 @@ case "$EVENT" in
     MSG="MegaCoder run $RUN_ID bootstrapped. Starting planning next (run-codex-plan)."
     ;;
   planned)
-    MSG="MegaCoder run $RUN_ID: planning complete. Review PLAN.md and TASKS.md."
+    PLAN_SNIPPET="$(trim_file "$RUN_DIR/PLAN.md" 6000)"
+    TASKS_SNIPPET="$(trim_file "$RUN_DIR/TASKS.md" 6000)"
+    if supports_codeblock_channel; then
+      MSG="MegaCoder run $RUN_ID: planning complete.
+
+PLAN + TASKS (for approval):
+\`\`\`
+## PLAN.md
+$PLAN_SNIPPET
+
+## TASKS.md
+$TASKS_SNIPPET
+\`\`\`
+
+Reply with approval or requested changes."
+    else
+      MSG=$(cat <<EOFMSG
+MegaCoder run $RUN_ID: planning complete.
+
+PLAN.md:
+$PLAN_SNIPPET
+
+TASKS.md:
+$TASKS_SNIPPET
+
+Reply with approval or requested changes.
+EOFMSG
+)
+    fi
     ;;
   questions)
     QUESTIONS_SNIPPET="$(trim_file "$RUN_DIR/QUESTIONS.md" 3000)"

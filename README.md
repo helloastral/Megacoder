@@ -119,8 +119,9 @@ Safer override (may reintroduce permission constraints):
 ## Notes
 
 - `run-codex-plan.sh` and `run-claude-implement.sh` create context packets so each agent receives full run context.
-- `dispatch-event.sh` now runs after plan/implement/PR and does both:
+- `dispatch-event.sh` now runs after bootstrap/plan/implement/PR and does both:
 - notify origin thread via `notify-origin.sh`
+  - for `planned` events, it posts `PLAN.md` + `TASKS.md` contents directly (code block on Slack/Telegram/WhatsApp)
 - wake orchestrator agent via `wake-main-agent.sh`
 - `heartbeat-check.sh` is a fallback scanner for missed wake/message events.
 - OpenClaw remains the orchestrator and PR owner; Codex/Claude are execution engines.
