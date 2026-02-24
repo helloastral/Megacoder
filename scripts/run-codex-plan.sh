@@ -139,13 +139,18 @@ RUN_USER="${MEGACODER_RUN_AS_USER:-openclaw}"
 
 if [[ "$(id -u)" -eq 0 ]]; then
   # Codex may also refuse dangerous flags under root.
-  # Ensure the drop-privilege user exists, create if missing.
-  if ! id "$RUN_USER" &>/dev/null; then
-    echo "User '$RUN_USER' does not exist. Creating..."
-    useradd -r -m -s /bin/bash "$RUN_USER"
+  # Try to drop privileges when system tools are available; otherwise fallback to root.
+  if command -v useradd >/dev/null 2>&1 && command -v runuser >/dev/null 2>&1; then
+    if ! id "$RUN_USER" &>/dev/null; then
+      echo "User '$RUN_USER' does not exist. Creating..."
+      useradd -r -m -s /bin/bash "$RUN_USER"
+    fi
+    chown -R "$RUN_USER" "$ABS_RUN_DIR" "$ABS_WT_DIR"
+    runuser -u "$RUN_USER" -- "${CMD[@]}" "$PROMPT" > "$ABS_RUN_DIR/CODEX_EVENTS.jsonl"
+  else
+    echo "useradd/runuser not available; running codex as current user (root)."
+    "${CMD[@]}" "$PROMPT" > "$ABS_RUN_DIR/CODEX_EVENTS.jsonl"
   fi
-  chown -R "$RUN_USER" "$ABS_RUN_DIR" "$ABS_WT_DIR"
-  runuser -u "$RUN_USER" -- "${CMD[@]}" "$PROMPT" > "$ABS_RUN_DIR/CODEX_EVENTS.jsonl"
 else
   "${CMD[@]}" "$PROMPT" > "$ABS_RUN_DIR/CODEX_EVENTS.jsonl"
 fi
