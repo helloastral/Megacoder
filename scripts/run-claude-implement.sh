@@ -122,7 +122,7 @@ if ! command -v claude >/dev/null 2>&1; then
   exit 1
 fi
 
-CMD=(claude -p --add-dir "$ABS_RUN_DIR" --output-format json)
+CMD=(claude -p --input-format text --add-dir "$ABS_RUN_DIR" --output-format json)
 if [[ -n "${MEGACODER_CLAUDE_MODEL:-}" ]]; then
   CMD+=(--model "$MEGACODER_CLAUDE_MODEL")
 fi
@@ -144,7 +144,8 @@ export IS_SANDBOX=1
 
 (
   cd "$ABS_WT_DIR"
-  "${CMD[@]}" "$PROMPT"
+  # Feed prompt over stdin so very long/multiline prompts do not break argument parsing.
+  "${CMD[@]}" <<< "$PROMPT"
 ) > "$ABS_RUN_DIR/CLAUDE_OUTPUT.json"
 
 if [[ ! -f "$ABS_RUN_DIR/QUESTIONS.md" ]]; then
